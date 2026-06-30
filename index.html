@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIT Coders Arena & Departmental Battleground</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono for the terminal feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- HTML2Canvas for downloading shoutout cards -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <!-- Animated background glows -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <div class="container">
+        <!-- Brand Header Section -->
+        <header class="header animate-fade-in">
+            <div class="logo-area">
+                <div class="cit-badge">CIT</div>
+                <div class="divider"></div>
+                <div class="lc-badge"><i class="fa-solid fa-gamepad"></i> CODERS ARENA</div>
+            </div>
+            <h1>CIT Coders Arena</h1>
+            <p class="subtitle">Exploring coding metrics across all <strong>8 departments</strong> of Chennai Institute of Technology. Search profiles, initiate hacking scans, and duel students across LeetCode, Codeforces, CodeChef, and GitHub.</p>
+        </header>
+
+        <!-- Stats Overview Cards Panel -->
+        <section class="stats-panel animate-fade-in delay-1">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Coders</span>
+                    <span class="stat-value" id="stat-total-coders">--</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-crown" style="color: #ffa116;"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Peak LC Rating</span>
+                    <span class="stat-value" id="stat-peak-rating">--</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-code-fork" style="color: #8c52ff;"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">GitHub Repos</span>
+                    <span class="stat-value" id="stat-total-repos">--</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-shield-halved" style="color: #318dff;"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Active Duelists</span>
+                    <span class="stat-value" id="stat-active-duelists">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Departmental Battleground Metrics -->
+        <section class="dept-battleground animate-fade-in delay-1">
+            <h2><i class="fa-solid fa-chart-simple"></i> Departmental Battleground</h2>
+            <p class="section-desc">Real-time algorithmic rating average comparison across departments.</p>
+            <div class="dept-grid" id="dept-metrics-container">
+                <!-- Dynamically loaded bar charts will populate here -->
+            </div>
+        </section>
+
+        <!-- Code Duel Arena Panel -->
+        <section class="duel-arena-section animate-fade-in delay-2">
+            <div class="duel-header">
+                <h2><i class="fa-solid fa-burst"></i> Code Duel Arena</h2>
+                <p>Pit two CIT coders side-by-side to compare ratings, solved counts, and GitHub presence.</p>
+            </div>
+            
+            <div class="duel-setup">
+                <div class="fighter-select">
+                    <label for="fighter-a-select">Coder A</label>
+                    <select id="fighter-a-select">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                
+                <div class="vs-divider">VS</div>
+                
+                <div class="fighter-select">
+                    <label for="fighter-b-select">Coder B</label>
+                    <select id="fighter-b-select">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            
+            <div class="duel-action">
+                <button id="initiate-duel-btn" class="action-btn duel-btn"><i class="fa-solid fa-fire"></i> FIGHT! </button>
+            </div>
+
+            <!-- Duel Arena Display -->
+            <div id="duel-board" class="duel-board hidden">
+                <div class="duel-fighter-side fighter-left">
+                    <div class="duel-avatar" id="duel-avatar-a">A</div>
+                    <h3 id="duel-name-a">Fighter A</h3>
+                    <span class="duel-dept" id="duel-dept-a">AIDS</span>
+                    
+                    <!-- Health / Skill Bar -->
+                    <div class="health-bar-container">
+                        <div class="health-bar" id="health-bar-a" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="duel-stats-center">
+                    <div class="duel-stat-row">
+                        <span class="duel-stat-val left" id="duel-val-lc-a">--</span>
+                        <span class="duel-stat-name"><i class="fa-solid fa-code"></i> LeetCode Rating</span>
+                        <span class="duel-stat-val right" id="duel-val-lc-b">--</span>
+                    </div>
+                    <div class="duel-stat-row">
+                        <span class="duel-stat-val left" id="duel-val-solved-a">--</span>
+                        <span class="duel-stat-name"><i class="fa-solid fa-check-double"></i> Problems Solved</span>
+                        <span class="duel-stat-val right" id="duel-val-solved-b">--</span>
+                    </div>
+                    <div class="duel-stat-row">
+                        <span class="duel-stat-val left" id="duel-val-cf-a">--</span>
+                        <span class="duel-stat-name"><i class="fa-solid fa-chart-line"></i> Codeforces Rating</span>
+                        <span class="duel-stat-val right" id="duel-val-cf-b">--</span>
+                    </div>
+                    <div class="duel-stat-row">
+                        <span class="duel-stat-val left" id="duel-val-gh-a">--</span>
+                        <span class="duel-stat-name"><i class="fa-brands fa-github"></i> GitHub Repos</span>
+                        <span class="duel-stat-val right" id="duel-val-gh-b">--</span>
+                    </div>
+                </div>
+
+                <div class="duel-fighter-side fighter-right">
+                    <div class="duel-avatar" id="duel-avatar-b">B</div>
+                    <h3 id="duel-name-b">Fighter B</h3>
+                    <span class="duel-dept" id="duel-dept-b">CSE</span>
+                    
+                    <!-- Health / Skill Bar -->
+                    <div class="health-bar-container">
+                        <div class="health-bar" id="health-bar-b" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search, Filter & Sort Section -->
+        <section class="controls-area animate-fade-in delay-2">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search coders by name, department, or platform username..." autocomplete="off">
+                <button id="clear-search" class="clear-btn" title="Clear Search"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <button class="filter-chip active" data-filter="all">All Departments</button>
+                    <button class="filter-chip" data-filter="CSE">CSE</button>
+                    <button class="filter-chip" data-filter="AIDS">AIDS</button>
+                    <button class="filter-chip" data-filter="AIML">AIML</button>
+                    <button class="filter-chip" data-filter="IT">IT</button>
+                    <button class="filter-chip" data-filter="CS">CS</button>
+                    <button class="filter-chip" data-filter="CSBS">CSBS</button>
+                    <button class="filter-chip" data-filter="ECE">ECE</button>
+                    <button class="filter-chip" data-filter="VLSI">VLSI</button>
+                </div>
+                
+                <div class="sort-box">
+                    <label for="sort-select"><i class="fa-solid fa-arrow-down-wide-short"></i> Sort By:</label>
+                    <select id="sort-select">
+                        <option value="lc-rating-desc">LeetCode: High to Low</option>
+                        <option value="cf-rating-desc">Codeforces: High to Low</option>
+                        <option value="gh-repos-desc">GitHub: Most Repos</option>
+                        <option value="name-asc">Name: A to Z</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Grid of Coders -->
+        <main class="knights-grid animate-fade-in delay-3" id="knights-grid-container">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Decoding student repositories...</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer animate-fade-in delay-4">
+            <p>© 2026 Chennai Institute of Technology | Algorithmic Roster Council</p>
+            <p class="api-credits">Live metrics scraped via Python backend using GraphQL and Codeforces API.</p>
+        </footer>
+    </div>
+
+    <!-- Hacking Terminal Scan Overlay Modal -->
+    <div id="scan-modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="terminal-content">
+            <div class="terminal-header">
+                <div class="term-dots">
+                    <span class="t-dot dot-red"></span>
+                    <span class="t-dot dot-yellow"></span>
+                    <span class="t-dot dot-green"></span>
+                </div>
+                <span class="terminal-title">Profile Scanner - Decrypting...</span>
+                <button class="terminal-close-btn" id="close-scan-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="terminal-body" id="terminal-console">
+                <!-- Hacking scan line logs will feed dynamically here -->
+            </div>
+            
+            <!-- Result Panel (Reveals after animation completes) -->
+            <div class="terminal-result hidden" id="terminal-scan-result">
+                <!-- Rich details card -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Card Modal (From current code, kept complete) -->
+    <div id="certificate-modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content-wrapper">
+            <button class="modal-close-btn" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="modal-grid">
+                <!-- Live Preview of the Certificate / Poster -->
+                <div class="certificate-preview-container">
+                    <div id="achievement-poster" class="achievement-poster">
+                        <div class="poster-border-glow"></div>
+                        <div class="poster-inner">
+                            <div class="poster-header">
+                                <div class="poster-cit-logo">
+                                    <div class="logo-cit">CIT</div>
+                                    <div class="logo-sub">Chennai Institute of Technology</div>
+                                </div>
+                                <div class="poster-leetcode-logo">
+                                    <i class="fa-solid fa-code"></i> CODING CHAMP
+                                </div>
+                            </div>
+                            
+                            <div class="poster-badge-area">
+                                <div class="poster-gold-shield">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                    <div class="shield-knight-helmet"><i class="fa-solid fa-helmet-safety"></i></div>
+                                </div>
+                                <span class="poster-badge-title" id="poster-badge-title">LEETCODE KNIGHT</span>
+                            </div>
+                            
+                            <div class="poster-recipient">
+                                <span class="poster-label">THIS CERTIFICATE CELEBRATES THE ACHIEVEMENT OF</span>
+                                <h2 class="recipient-name" id="poster-recipient-name">Student Name</h2>
+                                <p class="recipient-college" id="poster-recipient-dept">DEPARTMENT OF COMPUTER SCIENCE</p>
+                            </div>
+                            
+                            <div class="poster-description">
+                                <p id="poster-congratulations-msg">For outstanding rating levels in global algorithmic challenges, solved questions, and demonstrating exceptional problem-solving credentials.</p>
+                            </div>
+                            
+                            <div class="poster-stats-grid">
+                                <div class="poster-stat">
+                                    <span class="p-stat-val" id="poster-stat-rating">1950</span>
+                                    <span class="p-stat-lbl">LeetCode Rating</span>
+                                </div>
+                                <div class="poster-stat">
+                                    <span class="p-stat-val" id="poster-stat-problems">500+</span>
+                                    <span class="p-stat-lbl">Problems Solved</span>
+                                </div>
+                                <div class="poster-stat">
+                                    <span class="p-stat-val" id="poster-stat-cf">Specialist</span>
+                                    <span class="p-stat-lbl">Codeforces Rank</span>
+                                </div>
+                            </div>
+                            
+                            <div class="poster-footer">
+                                <div class="signature">
+                                    <span class="sig-title">CIT Coding Council</span>
+                                </div>
+                                <div class="date-stamped">
+                                    <span class="date-val" id="poster-date">May 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customization Panel -->
+                <div class="customization-panel">
+                    <h3><i class="fa-solid fa-sliders"></i> Customize Shoutout</h3>
+                    <p class="panel-desc">Personalize the congratulations card before downloading or sharing it with your network.</p>
+                    
+                    <div class="form-group">
+                        <label for="custom-name-input">Recipient Name</label>
+                        <input type="text" id="custom-name-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="custom-msg-input">Congratulatory Message</label>
+                        <textarea id="custom-msg-input" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="custom-rating-input">LeetCode Rating</label>
+                        <input type="text" id="custom-rating-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="custom-solved-input">Problems Solved</label>
+                        <input type="text" id="custom-solved-input">
+                    </div>
+
+                    <div class="action-buttons-group">
+                        <button id="download-poster-btn" class="action-btn download-btn">
+                            <i class="fa-solid fa-download"></i> Download PNG
+                        </button>
+                        <button id="share-mock-btn" class="action-btn share-btn">
+                            <i class="fa-solid fa-share-nodes"></i> Copy Invite Link
+                        </button>
+                    </div>
+                    <div class="share-toast" id="toast-message">Copied link to clipboard!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data script exports window.knightsData -->
+    <script src="data.js"></script>
+    <!-- Code script controls logic -->
+    <script src="app.js"></script>
+</body>
+</html>

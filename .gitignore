@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local/Gemini configurations & logs
+.gemini/
+.system_generated/
+*.log
+
+# Workspace temporary files
+*.tmp
+temp/
+scratch/
+
+# OS files
+.DS_Store
+Thumbs.db

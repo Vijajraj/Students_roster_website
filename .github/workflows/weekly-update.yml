@@ -1,0 +1,42 @@
+name: Weekly Leaderboard Update
+
+on:
+  schedule:
+    # Run every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    # Allow manual triggering from the GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update-leaderboard:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pypdf
+
+    - name: Run College Roster Scanner
+      run: |
+        python scan_entire_college.py
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "GitHub Action Bot"
+        git config --global user.email "actions@github.com"
+        git add data.js knights.json
+        # Commit only if there are changes
+        git diff-index --quiet HEAD || git commit -m "Automated weekly competitive programming stats update"
+        git push
