@@ -4,6 +4,11 @@ A modern, high-performance web dashboard showcasing coding metrics across all **
 
 ---
 
+## 📅 Automatic Weekly Update Schedule
+The roster metrics are automatically refreshed and updated **every Thursday at 10:00 AM IST (04:30 AM UTC)** using automated GitHub Actions workflow schedules.
+
+---
+
 ## ✨ Features
 
 - **📊 Departmental Battleground**: Live comparison of average coding ratings across departments (AIDS, AIML, CS, CSBS, CSE, ECE, IT, VLSI).

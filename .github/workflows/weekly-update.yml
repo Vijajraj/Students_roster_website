@@ -2,8 +2,8 @@ name: Weekly Leaderboard Update
 
 on:
   schedule:
-    # Run every Sunday at 00:00 UTC
-    - cron: '0 0 * * 0'
+    # Run every Thursday at 10:00 AM IST (04:30 UTC)
+    - cron: '30 4 * * 4'
   workflow_dispatch:
     # Allow manual triggering from the GitHub Actions tab
 

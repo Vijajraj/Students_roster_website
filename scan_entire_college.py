@@ -446,22 +446,76 @@ def run_batch_query(batch):
 # STEP 3: Codeforces & GitHub enrichment
 # =====================================================
 def get_codeforces_info(handles):
-    url = f"https://codeforces.com/api/user.info?handles={';'.join(handles)}"
+    cf_map = {}
+    current_handles = list(handles)
+    
+    while current_handles:
+        url = f"https://codeforces.com/api/user.info?handles={';'.join(current_handles)}"
+        try:
+            r = requests.get(url, timeout=5)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("status") == "OK":
+                    for u in data.get("result", []):
+                        cf_map[u.get("handle", "").lower()] = {
+                            "rating": u.get("rating", 0),
+                            "rank": u.get("rank", "unrated").title()
+                        }
+                    break
+            elif r.status_code == 400:
+                data = r.json()
+                comment = data.get("comment", "")
+                match = re.search(r"User with handle (\S+) not found", comment)
+                if match:
+                    invalid_handle = match.group(1)
+                    old_len = len(current_handles)
+                    current_handles = [h for h in current_handles if h.lower() != invalid_handle.lower()]
+                    if len(current_handles) == old_len:
+                        # Fallback to prevent infinite loop
+                        current_handles.pop(0)
+                else:
+                    break
+            else:
+                break
+        except Exception:
+            break
+            
+    return cf_map
+
+
+
+def get_codechef_info(username):
+    url = f"https://www.codechef.com/users/{username}"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
     try:
-        r = requests.get(url, timeout=5)
+        r = requests.get(url, headers=headers, timeout=4)
         if r.status_code == 200:
-            data = r.json()
-            if data.get("status") == "OK":
-                cf_map = {}
-                for u in data.get("result", []):
-                    cf_map[u.get("handle", "").lower()] = {
-                        "rating": u.get("rating", 0),
-                        "rank": u.get("rank", "unrated").title()
-                    }
-                return cf_map
+            html = r.text
+            rating_match = re.search(r'class="rating-number">([^<]+)', html)
+            rating = 0
+            if rating_match:
+                try:
+                    rating = int(rating_match.group(1).strip())
+                except ValueError:
+                    pass
+            
+            stars = 1
+            rating_star_match = re.search(r'<div class="rating-star">([\s\S]+?)</div>', html)
+            if rating_star_match:
+                stars = rating_star_match.group(1).count('&#9733;')
+                if stars == 0:
+                    stars = 1
+            
+            return {
+                "rating": rating,
+                "stars": f"{stars}★"
+            }
     except Exception:
         pass
-    return {}
+    return None
+
 
 github_rate_limit_hit = False
 
@@ -574,8 +628,9 @@ def main():
         for s in badge_holders:
             cf = s["codeforces_username"].strip()
             if cf.lower() not in bad_cf and "@" not in cf and "http" not in cf:
-                cf_handles.append(cf)
-                cf_map_idx[cf.lower()] = s
+                if len(cf) >= 3 and len(cf) <= 24 and re.match(r"^[a-zA-Z0-9_.-]+$", cf):
+                    cf_handles.append(cf)
+                    cf_map_idx[cf.lower()] = s
         
         cf_data = {}
         for i in range(0, len(cf_handles), 50):
@@ -594,6 +649,18 @@ def main():
         
         with ThreadPoolExecutor(max_workers=8) as executor:
             executor.map(enrich_gh, badge_holders)
+            
+        print("Enriching with CodeChef ratings (top users)...")
+        def enrich_cc(s):
+            if int(s["leetcode_rating"]) >= 1800:
+                cc = s["codechef_username"].strip()
+                if cc.lower() not in bad_cf and "@" not in cc and "http" not in cc:
+                    res = get_codechef_info(cc)
+                    if res:
+                        s["codechef_stars"] = res["stars"]
+                        
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            executor.map(enrich_cc, badge_holders)
     
     # Sort by rating descending
     badge_holders.sort(key=lambda x: int(x["leetcode_rating"]), reverse=True)
